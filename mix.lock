@@ -1,0 +1,3 @@
+%{
+  "murmur": {:hex, :murmur, "1.0.1", "a6e6bced2dd0d666090a9cf3e73699f3b9176bbcf32d35b0f022f137667608e3", [:mix], [], "hexpm", "1303e80b1a5514a8afe0baf4241903ae31e3ba8b7e9e7c2219a668c065a691a6"},
+}
