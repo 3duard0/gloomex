@@ -20,10 +20,9 @@ defmodule Gloomex.GloomexTest do
 
     bloom = Gloomex.plain(initial_amount, false_positive_probability)
 
-    #bloom =
-      Enum.reduce(1..initial_amount, bloom, fn x, bloom ->
-        Gloomex.put!(bloom, Integer.to_string(x))
-      end)
+    Enum.reduce(1..initial_amount, bloom, fn x, bloom ->
+      Gloomex.put!(bloom, Integer.to_string(x))
+    end)
 
     fp =
       Enum.reduce((initial_amount + 1)..(initial_amount + generate_amount), 0, fn x, fp ->
