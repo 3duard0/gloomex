@@ -4,8 +4,6 @@ defmodule Gloomex.BloomFilterStrategy.Murmur128MITZ64 do
   """
   use Bitwise
 
-  import Gloomex.ByteHelper
-
   alias Gloomex.{BitArray, Bloom, BloomFilterStrategy}
 
   @behaviour BloomFilterStrategy
@@ -23,14 +21,15 @@ defmodule Gloomex.BloomFilterStrategy.Murmur128MITZ64 do
       ) do
     bit_size = BitArray.bit_size(bit_array)
     hash_double = Murmur.hash_x64_128(object, @seed)
-    hash1 = upper_eight(hash_double)
-    hash2 = lower_eight(hash_double)
 
-    [bit_array, _] =
-      Enum.reduce(1..num_of_hash_functions, [bit_array, hash1], fn _,
-                                                                   [bit_array, combined_hash] ->
+    <<hash1::integer-unsigned-64, hash2::integer-unsigned-64>> =
+      <<hash_double::integer-unsigned-128>>
+
+    {bit_array, _} =
+      Enum.reduce(1..num_of_hash_functions, {bit_array, hash1}, fn _,
+                                                                   {bit_array, combined_hash} ->
         index = (combined_hash &&& @long_max_value) |> rem(bit_size)
-        [BitArray.set!(bit_array, index), combined_hash + hash2]
+        {BitArray.set!(bit_array, index), combined_hash + hash2}
       end)
 
     %{bloom | bit_array: bit_array}
@@ -46,8 +45,9 @@ defmodule Gloomex.BloomFilterStrategy.Murmur128MITZ64 do
       ) do
     bit_size = BitArray.bit_size(bit_array)
     hash_double = Murmur.hash_x64_128(object, @seed)
-    hash1 = upper_eight(hash_double)
-    hash2 = lower_eight(hash_double)
+
+    <<hash1::integer-unsigned-64, hash2::integer-unsigned-64>> =
+      <<hash_double::integer-unsigned-128>>
 
     result =
       Enum.reduce_while(1..num_of_hash_functions, hash1, fn _, combined_hash ->

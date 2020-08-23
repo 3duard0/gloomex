@@ -9,6 +9,8 @@ defmodule Gloomex.BitArray do
   @type t :: :atomics.atomics_ref()
 
   @long_size 64
+
+  # long only shifts by last 6 bits (0x3F)
   @long_shift_mask 0x3F
   @long_addressable_bits 6
 
