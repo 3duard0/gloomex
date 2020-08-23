@@ -1,9 +1,12 @@
 defmodule Gloomex do
   @moduledoc """
+  A fast and concurrent bloom filter.
+  It uses `atomics` module, therefore this is a mutable structure.
   """
 
+  alias Gloomex.BloomFilterStrategy
+
   @type t :: Gloomex.Bloom.t()
-  @type mode :: :bits | :size | :guava
 
   defmodule Bloom do
     @moduledoc """
@@ -13,20 +16,17 @@ defmodule Gloomex do
       :fpp,
       :num_of_hash_functions,
       :num_of_bits,
-      :size,
-    # TODO ver um nome melhor do que bv
-      :bv,
+      :bit_array,
       :strategy
     ]
 
     @type t :: %Bloom{
-                 fpp: number,
-                 num_of_hash_functions: integer,
-                 num_of_bits: integer,
-                 size: integer,
-                 bv: [Gloomex.BitArray.t()],
-                 strategy: Gloomex.Strategy.t(),
-               }
+            fpp: number,
+            num_of_hash_functions: integer,
+            num_of_bits: integer,
+            bit_array: Gloomex.BitArray.t(),
+            strategy: Gloomex.BloomFilterStrategy.t()
+          }
   end
 
   @doc """
@@ -37,11 +37,10 @@ defmodule Gloomex do
 
   If a hash function is not provided then Murmur3_x64_128 will be used.
   """
-  #@spec plain(integer, float, hash_func()) :: Bloom.t()
-  def plain(expected_insertions, fpp, strategy \\ Gloomex.BloomFilterStrategy.Murmur128MITZ64)
+  @spec plain(pos_integer(), float(), BloomFilterStrategy.t()) :: t()
+  def plain(expected_insertions, fpp, strategy \\ BloomFilterStrategy.Murmur128MITZ64)
       when is_number(expected_insertions) and expected_insertions > 0 and
-           is_float(fpp) and fpp > 0 and fpp < 1 do
-
+             is_float(fpp) and fpp > 0 and fpp < 1 do
     num_of_bits = optimal_num_of_bits(expected_insertions, fpp)
     num_of_hash_functions = optimal_num_of_hash_functions(expected_insertions, num_of_bits)
 
@@ -49,16 +48,24 @@ defmodule Gloomex do
       fpp: fpp,
       num_of_hash_functions: num_of_hash_functions,
       num_of_bits: num_of_bits,
-      size: 0,
-      bv: Gloomex.BitArray.new(num_of_bits),
-      strategy: strategy,
+      bit_array: Gloomex.BitArray.new(num_of_bits),
+      strategy: strategy
     }
   end
 
+  @doc """
+  Check if the element is in the bloom filter.
+  Beware that this may be a false positive.
+  There's no false negatives, i.e. if the result is false the element is not present.
+  """
+  @spec might_contain?(t(), any()) :: boolean()
   def might_contain?(%Bloom{strategy: strategy} = bloom, e), do: strategy.might_contain?(bloom, e)
-  def put(%Bloom{strategy: strategy} = bloom, e), do: strategy.put(bloom, e)
 
-  # TODO missing size
+  @doc """
+  Puts in-place a new element in the bloom filter
+  """
+  @spec put!(t(), any()) :: t()
+  def put!(%Bloom{strategy: strategy} = bloom, e), do: strategy.put!(bloom, e)
 
   @doc """
   Copied from Guava
@@ -68,10 +75,8 @@ defmodule Gloomex do
   <p>See http://en.wikipedia.org/wiki/File:Bloom_filter_fp_probability.svg for the formula.
   """
   defp optimal_num_of_hash_functions(expected_insertions, num_of_bits) do
-    # TODO check if same values as guava
     max(1, round(num_of_bits / expected_insertions * :math.log(2)))
   end
-
 
   @doc """
   Copied from Guava
@@ -82,7 +87,6 @@ defmodule Gloomex do
   formula.
   """
   defp optimal_num_of_bits(expected_insertions, fpp) do
-    # TODO check if same values as guava
     trunc(-expected_insertions * log2(fpp) / :math.log(2))
   end
 

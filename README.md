@@ -2,6 +2,8 @@
 
 Guava like bloom filter library for elixir.
 
+Supports murmur_x64_128 and uses a bit array implemented with :atomics.
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
