@@ -6,8 +6,6 @@ defmodule Gloomex.BitArray do
 
   use Bitwise
 
-  import Gloomex.ByteHelper
-
   @type t :: :atomics.atomics_ref()
 
   @long_size 64

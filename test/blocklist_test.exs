@@ -14,7 +14,11 @@ defmodule Gloomex.BlocklistTest do
 
   describe "check true negatives, false positives and true positives" do
     setup do
-      {:ok, filter: build_blocklist_bloom_filter()}
+      # In my machine
+      # Takes 1 MB of memory
+      # 9 seconds to build bloom filter
+      # 757 microseconds to check if a password is in it
+      {:ok, filter: Gloomex.plain_from_file(@blocklist_file, 0.01)}
     end
 
     test "true positives", %{filter: filter} do
@@ -43,25 +47,5 @@ defmodule Gloomex.BlocklistTest do
         refute Gloomex.might_contain?(filter, tn)
       end)
     end
-  end
-
-  defp build_blocklist_bloom_filter() do
-    password_count()
-    |> Gloomex.plain(0.01)
-    |> populate()
-  end
-
-  defp populate(bf) do
-    @blocklist_file
-    |> File.stream!()
-    |> Enum.reduce(bf, fn not_allowed_pass, acc ->
-      Gloomex.put!(acc, String.trim(not_allowed_pass))
-    end)
-  end
-
-  defp password_count() do
-    @blocklist_file
-    |> File.stream!()
-    |> Enum.count()
   end
 end
