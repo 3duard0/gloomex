@@ -8,9 +8,9 @@ defmodule Gloomex.BlocklistTest do
   """
   use ExUnit.Case
 
-  @blocklist_file "/home/eduardo/dev/stone/gloomex/test/resources/top1000000.txt"
-  @false_positives "/home/eduardo/dev/stone/gloomex/test/resources/false-positives.txt"
-  @true_negatives "/home/eduardo/dev/stone/gloomex/test/resources/true-negatives.txt"
+  @blocklist_file "#{__DIR__}/resources/top1000000.txt"
+  @false_positives "#{__DIR__}/resources/false-positives.txt"
+  @true_negatives "#{__DIR__}/resources/true-negatives.txt"
 
   describe "check true negatives, false positives and true positives" do
     setup do

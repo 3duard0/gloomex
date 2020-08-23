@@ -1,7 +1,8 @@
 defmodule Gloomex do
   @moduledoc """
   A fast and concurrent bloom filter.
-  It uses `atomics` module, therefore this is a mutable structure.
+
+  It's goal is to emulate Guava bloom filter, mantaining the same behavior regarding false positives.
   """
 
   alias Gloomex.BloomFilterStrategy
