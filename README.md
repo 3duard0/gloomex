@@ -1,4 +1,4 @@
-# Gloomex
+# ![gloom](https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/44.png)Gloomex
 
 Guava like bloom filter library for elixir.
 
