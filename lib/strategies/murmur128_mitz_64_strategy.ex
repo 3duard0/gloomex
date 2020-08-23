@@ -22,8 +22,7 @@ defmodule Gloomex.BloomFilterStrategy.Murmur128MITZ64 do
     bit_size = BitArray.bit_size(bit_array)
     hash_double = Murmur.hash_x64_128(object, @seed)
 
-    <<hash1::integer-unsigned-64, hash2::integer-unsigned-64>> =
-      <<hash_double::integer-unsigned-128>>
+    <<hash1::64, hash2::64>> = <<hash_double::128>>
 
     {bit_array, _} =
       Enum.reduce(1..num_of_hash_functions, {bit_array, hash1}, fn _,
@@ -46,8 +45,7 @@ defmodule Gloomex.BloomFilterStrategy.Murmur128MITZ64 do
     bit_size = BitArray.bit_size(bit_array)
     hash_double = Murmur.hash_x64_128(object, @seed)
 
-    <<hash1::integer-unsigned-64, hash2::integer-unsigned-64>> =
-      <<hash_double::integer-unsigned-128>>
+    <<hash1::64, hash2::64>> = <<hash_double::128>>
 
     result =
       Enum.reduce_while(1..num_of_hash_functions, hash1, fn _, combined_hash ->
