@@ -71,11 +71,9 @@ defmodule Gloomex do
   defp populate_from_file(bloom, file) do
     file
     |> File.stream!()
-    |> Enum.each(fn not_allowed_pass ->
-      Gloomex.put!(bloom, String.trim(not_allowed_pass))
+    |> Enum.reduce(bloom, fn word, acc ->
+      put(acc, String.trim(word))
     end)
-
-    bloom
   end
 
   @doc """
@@ -87,10 +85,10 @@ defmodule Gloomex do
   def might_contain?(%Bloom{strategy: strategy} = bloom, e), do: strategy.might_contain?(bloom, e)
 
   @doc """
-  Puts in-place a new element in the bloom filter
+  Puts a new element in the bloom filter
   """
-  @spec put!(t(), any()) :: t()
-  def put!(%Bloom{strategy: strategy} = bloom, e), do: strategy.put!(bloom, e)
+  @spec put(t(), any()) :: t()
+  def put(%Bloom{strategy: strategy} = bloom, e), do: strategy.put(bloom, e)
 
   # Copied from Guava
   # Computes the optimal k (number of hashes per element inserted in Bloom filter), given the

@@ -6,7 +6,7 @@ defmodule Gloomex.GloomexTest do
   test "integration" do
     bloom = Gloomex.plain(999_999, 0.01)
     refute Gloomex.might_contain?(bloom, "oi")
-    bloom = Gloomex.put!(bloom, "oi")
+    bloom = Gloomex.put(bloom, "oi")
     assert Gloomex.might_contain?(bloom, "oi")
     refute Gloomex.might_contain?(bloom, "ocaacasi")
   end
@@ -20,9 +20,10 @@ defmodule Gloomex.GloomexTest do
 
     bloom = Gloomex.plain(initial_amount, false_positive_probability)
 
-    Enum.reduce(1..initial_amount, bloom, fn x, bloom ->
-      Gloomex.put!(bloom, Integer.to_string(x))
-    end)
+    bloom =
+      Enum.reduce(1..initial_amount, bloom, fn x, bloom ->
+        Gloomex.put(bloom, Integer.to_string(x))
+      end)
 
     fp =
       Enum.reduce((initial_amount + 1)..(initial_amount + generate_amount), 0, fn x, fp ->

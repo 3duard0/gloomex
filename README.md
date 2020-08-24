@@ -2,7 +2,7 @@
 
 <b>G</b>uava like b<b>loom</b> filter library for <b>e</b>li<b>x</b>ir.
 
-Supports murmur_x64_128 and uses a bit array implemented with [:atomics](https://erlang.org/doc/man/atomics.html).
+Supports murmur_x64_128.
 
 It has the same false-positives as present in the bloom filter from the Guava library.
 
@@ -27,7 +27,7 @@ bloom_filter = Gloomex.plain_from_file(file, false_positive_ratio)
 Gloomex.might_contain?(bloom_filter, "123456789")
 ```
 
-You can also create the bloom filter manually, but beware that the put! is a mutable function for efficiency reasons.
+You can also create the bloom filter manually
 ```elixir
 file = "top_passwords.txt"
 

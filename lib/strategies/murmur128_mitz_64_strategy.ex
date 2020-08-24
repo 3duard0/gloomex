@@ -12,7 +12,7 @@ defmodule Gloomex.BloomFilterStrategy.Murmur128MITZ64 do
   @long_max_value trunc(:math.pow(2, 63)) - 1
 
   @impl true
-  def put!(
+  def put(
         %Bloom{
           num_of_hash_functions: num_of_hash_functions,
           bit_array: bit_array
@@ -28,7 +28,7 @@ defmodule Gloomex.BloomFilterStrategy.Murmur128MITZ64 do
       Enum.reduce(1..num_of_hash_functions, {bit_array, hash1}, fn _,
                                                                    {bit_array, combined_hash} ->
         index = (combined_hash &&& @long_max_value) |> rem(bit_size)
-        {BitArray.set!(bit_array, index), combined_hash + hash2}
+        {BitArray.set(bit_array, index), combined_hash + hash2}
       end)
 
     %{bloom | bit_array: bit_array}
