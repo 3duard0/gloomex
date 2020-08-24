@@ -1,12 +1,11 @@
 defmodule Gloomex.BitArray do
   @moduledoc """
-  This module implements a bit array using Erlang's `:atomics` module.
-  This structure is mutable, but concurrent and space efficient.
+  This module implements a bit array using Erlang's `:array` module.
   """
 
   use Bitwise
 
-  @type t :: :atomics.atomics_ref()
+  @type t :: :array.array(term)
 
   @long_size 64
 
@@ -19,36 +18,32 @@ defmodule Gloomex.BitArray do
   """
   @spec new(pos_integer) :: t
   def new(n) do
-    :atomics.new(ceil(n / @long_size), signed: false)
+    :array.new(ceil(n / @long_size), default: 0)
   end
 
   @doc """
-  Updates in-place a bitarray
+  Updates a bitarray
   """
-  @spec set!(t(), non_neg_integer) :: t()
-  def set!(a, i) do
+  @spec set(t(), non_neg_integer) :: t()
+  def set(a, i) do
     if get(a, i) do
       a
     else
       long_index = i >>> @long_addressable_bits
-      {_set, a} = try_exchange(a, long_index, 1 <<< (i &&& @long_shift_mask))
+      mask = 1 <<< (i &&& @long_shift_mask)
+      {_set, a} = try_exchange(a, long_index, mask)
       a
     end
   end
 
   defp try_exchange(a, long_index, mask) do
-    old_value = :atomics.get(a, long_index + 1)
+    old_value = :array.get(long_index, a)
     new_value = old_value ||| mask
 
-    cond do
-      old_value == new_value ->
-        {false, a}
-
-      :atomics.compare_exchange(a, long_index + 1, old_value, new_value) == :ok ->
-        {true, a}
-
-      true ->
-        try_exchange(a, long_index, mask)
+    if old_value == new_value do
+      {false, a}
+    else
+      {true, :array.set(long_index, new_value, a)}
     end
   end
 
@@ -58,7 +53,7 @@ defmodule Gloomex.BitArray do
   """
   @spec get(t(), non_neg_integer) :: boolean
   def get(a, i) do
-    case :atomics.get(a, (i >>> @long_addressable_bits) + 1) &&& 1 <<< (i &&& @long_shift_mask) do
+    case :array.get(i >>> @long_addressable_bits, a) &&& 1 <<< (i &&& @long_shift_mask) do
       0 -> false
       _ -> true
     end
@@ -68,6 +63,6 @@ defmodule Gloomex.BitArray do
   Amount of bits used by the atomic array
   """
   def bit_size(a) do
-    :atomics.info(a).size() * @long_size
+    :array.size(a) * @long_size
   end
 end

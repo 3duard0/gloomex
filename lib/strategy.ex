@@ -6,6 +6,6 @@ defmodule Gloomex.BloomFilterStrategy do
 
   @type t :: __MODULE__.Murmur128MITZ64
 
-  @callback put!(Bloom.t(), term()) :: Bloom.t()
+  @callback put(Bloom.t(), term()) :: Bloom.t()
   @callback might_contain?(Bloom.t(), term()) :: boolean()
 end
