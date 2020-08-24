@@ -1,0 +1,94 @@
+version: 2
+jobs:
+  test:
+    steps:
+      - checkout
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix hex.organization deauth stone
+      - run: mix hex.organization auth stone --key $HEX_ORG_KEY
+      - restore_cache:
+          keys:
+            - v1-dependency-cache-{{ checksum "mix.lock" }}
+            - v1-dependency-cache
+      - restore_cache:
+          keys:
+            - v1-build-cache-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+            - v1-build-cache-{{ .Branch }}
+            - v1-build-cache
+      - run: MIX_ENV=test mix deps.get
+      - save_cache:
+          key: v1-dependency-cache-{{ checksum "mix.lock" }}
+          paths: deps
+      - run: MIX_ENV=test mix quality.ci
+      - save_cache:
+          key: v1-build-cache-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
+          paths: _build
+      - store_test_results:
+          path: _build/test/lib/gloomex
+      - store_artifacts:
+          path: cover
+  publish:
+    docker:
+      - image: circleci/elixir:1.9.4
+    steps:
+      - checkout
+
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix hex.organization deauth stone
+      - run: mix hex.organization auth stone --key $HEX_ORG_KEY
+
+      - restore_cache:
+          keys:
+            - v1-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
+            - v1-mix-cache-{{ .Branch }}
+            - v1-mix-cache
+      - restore_cache:
+          keys:
+            - v1-build-cache-{{ .Branch }}
+            - v1-build-cache
+      - run: mix do deps.get, compile
+
+      - save_cache:
+          key: v1-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
+          paths: "deps"
+
+      - save_cache:
+          key: v1-mix-cache-{{ .Branch }}
+          paths: "deps"
+
+      - save_cache:
+          key: v1-mix-cache
+          paths: "deps"
+
+      - save_cache:
+          key: v1-build-cache-{{ .Branch }}
+          paths: "_build"
+
+      - save_cache:
+          key: v1-build-cache
+          paths: "_build"
+
+      - run: mix hex.publish --yes
+workflows:
+  version: 2
+  test-and-publish:
+    jobs:
+      - test:
+          context: banking
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /.*/
+      - publish:
+          context: banking
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+          requires:
+            - test
+
