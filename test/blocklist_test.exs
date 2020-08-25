@@ -14,10 +14,6 @@ defmodule Gloomex.BlocklistTest do
 
   describe "check true negatives, false positives and true positives" do
     setup do
-      # In my machine
-      # Takes 1 MB of memory
-      # 9 seconds to build bloom filter
-      # 757 microseconds to check if a password is in it
       {:ok, filter: Gloomex.plain_from_file(@blocklist_file, 0.01)}
     end
 
