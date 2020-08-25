@@ -27,7 +27,7 @@ bloom_filter = Gloomex.plain_from_file(file, false_positive_ratio)
 Gloomex.might_contain?(bloom_filter, "123456789")
 ```
 
-You can also create the bloom filter manually
+You can also create the bloom filter manually:
 ```elixir
 file = "top_passwords.txt"
 
@@ -48,4 +48,15 @@ end)
 
 # returns true if present or false positive
 Gloomex.might_contain?(bloom_filter, "123456789")
+```
+
+If the bloom filter you are creating takes a long time consider creating it in compile time:
+```elixir
+defmodule Blocklist do
+  @external_resource blocklist_file = "long_blocklist.txt"
+  @false_positive_ratio 0.01
+  @bloom_filter Gloomex.plain_from_file(blocklist_file, @false_positive_ratio)
+
+  def has_password?(pass), do: Gloomex.might_contain?(@bloom_filter, pass)
+end
 ```
